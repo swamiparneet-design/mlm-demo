@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = ["dotnet-sdk_8", "nodejs_22"]
+
+[phases.install]
+cmds = [
+  "cd frontend && npm ci",
+  "dotnet restore backend/MLM.sln"
+]
+
+[phases.build]
+cmds = [
+  "cd frontend && npm run build -- --configuration=production",
+  "mkdir -p backend/MLM.API/wwwroot",
+  "cp -r frontend/dist/* backend/MLM.API/wwwroot/ || cp -r frontend/dist/mlm-frontend/* backend/MLM.API/wwwroot/ || true",
+  "dotnet publish backend/MLM.API/MLM.API.csproj -c Release -o ./publish"
+]
+
+[start]
+cmd = "dotnet ./publish/MLM.API.dll"
