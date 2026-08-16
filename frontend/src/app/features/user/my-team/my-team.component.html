@@ -1,0 +1,73 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Team</h1>
+    <p class="text-slate-500 mt-1">Explore your downline placement tree, zone by zone.</p>
+  </div>
+
+  @if (loading()) {
+    <app-card>
+      <app-skeleton customClass="h-6 w-40" />
+      <div class="space-y-3 mt-5">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <app-skeleton customClass="h-10 w-full" />
+        }
+      </div>
+    </app-card>
+  } @else if (zones().length === 0) {
+    <app-card>
+      <app-empty-state icon="team" title="No team yet" description="Once you're placed into a zone and start referring members, your downline tree will appear here." />
+    </app-card>
+  } @else {
+    @if (zones().length > 1) {
+      <div class="flex gap-2 flex-wrap">
+        @for (zone of zones(); track zone.zoneId) {
+          <button
+            type="button"
+            (click)="selectZone(zone.zoneId)"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-smooth"
+            [class]="selectedZoneId() === zone.zoneId ? 'bg-navy-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'"
+          >
+            {{ zone.zoneName }}
+          </button>
+        }
+      </div>
+    }
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Total downline</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">{{ teamSize() }}</p>
+      </app-card>
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Direct placements</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">{{ tree()?.children?.length ?? 0 }}</p>
+      </app-card>
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Tree depth</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">{{ depth() }}</p>
+      </app-card>
+    </div>
+
+    <app-card title="Downline tree">
+      @if (treeLoading()) {
+        <div class="space-y-3">
+          @for (i of [1, 2, 3]; track i) {
+            <app-skeleton customClass="h-10 w-full" />
+          }
+        </div>
+      } @else if (!tree()) {
+        <app-empty-state
+          icon="team"
+          title="No downline in this zone yet"
+          description="Refer new members or wait for placements to see your team grow here."
+        />
+      } @else {
+        <div class="overflow-x-auto">
+          <div class="min-w-[280px]">
+            <app-placement-tree-node [node]="tree()!" [depth]="0" />
+          </div>
+        </div>
+      }
+    </app-card>
+  }
+</div>

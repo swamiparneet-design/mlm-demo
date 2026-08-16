@@ -1,0 +1,111 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Users</h1>
+    <p class="text-slate-500 mt-1">Search, filter and drill into any member's team &amp; payouts.</p>
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-3">
+    <div class="flex-1">
+      <app-input placeholder="Search by name, email or mobile…" [prefixIcon]="true" [ngModel]="search()" (ngModelChange)="onSearchChange($event)">
+        <svg icon class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+      </app-input>
+    </div>
+    <div class="flex gap-2">
+      @for (option of statusOptions; track option) {
+        <button
+          type="button"
+          (click)="statusFilter.set(option)"
+          class="px-3.5 py-2 rounded-lg text-sm font-medium capitalize transition-smooth"
+          [class]="statusFilter() === option ? 'bg-navy-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'"
+        >
+          {{ option }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-card>
+      <div class="space-y-3">
+        @for (i of [1, 2, 3, 4, 5]; track i) { <app-skeleton customClass="h-12 w-full" /> }
+      </div>
+    </app-card>
+  } @else if (filtered().length === 0) {
+    <app-card>
+      <app-empty-state icon="search" title="No users found" description="Try a different search term or filter." />
+    </app-card>
+  } @else {
+    <app-table class="hidden lg:block">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="text-left font-medium px-5 py-3">Name</th>
+            <th class="text-left font-medium px-5 py-3">Contact</th>
+            <th class="text-left font-medium px-5 py-3">Zone / Stage</th>
+            <th class="text-right font-medium px-5 py-3">Team</th>
+            <th class="text-left font-medium px-5 py-3">Joined</th>
+            <th class="text-left font-medium px-5 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (user of filtered(); track user.id) {
+            <tr class="hover:bg-slate-50/60 transition-smooth cursor-pointer" (click)="openUser(user)">
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-navy-100 text-navy-700 flex items-center justify-center text-xs font-semibold shrink-0">
+                    {{ user.fullName.slice(0, 1).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-medium text-slate-800">{{ user.fullName }}</p>
+                    <p class="text-xs text-slate-400">{{ user.role }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-3.5 text-slate-500">
+                <p>{{ user.email }}</p>
+                <p class="text-xs text-slate-400">{{ user.mobile }}</p>
+              </td>
+              <td class="px-5 py-3.5">
+                @if (user.currentZoneName) {
+                  <app-badge variant="navy" size="sm">{{ user.currentZoneName }}</app-badge>
+                  <app-badge variant="gold" size="sm" class="ml-1">{{ user.currentStageName }}</app-badge>
+                } @else {
+                  <span class="text-slate-400 text-xs">—</span>
+                }
+              </td>
+              <td class="px-5 py-3.5 text-right font-medium text-slate-700">{{ user.teamSize }}</td>
+              <td class="px-5 py-3.5 text-slate-500">{{ user.createdAt | date: 'MMM d, y' }}</td>
+              <td class="px-5 py-3.5">
+                <app-badge [variant]="user.isActive ? 'emerald' : 'gray'" size="sm">{{ user.isActive ? 'Active' : 'Inactive' }}</app-badge>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table>
+
+    <!-- Stacked cards below lg -->
+    <div class="lg:hidden space-y-3">
+      @for (user of filtered(); track user.id) {
+        <app-card padding="sm" [hover]="true" (click)="openUser(user)">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-navy-100 text-navy-700 flex items-center justify-center text-sm font-semibold shrink-0">
+              {{ user.fullName.slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-slate-800 truncate">{{ user.fullName }}</p>
+              <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
+            </div>
+            <app-badge [variant]="user.isActive ? 'emerald' : 'gray'" size="sm">{{ user.isActive ? 'Active' : 'Inactive' }}</app-badge>
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
+            <span>{{ user.currentZoneName || '—' }} · {{ user.currentStageName || '—' }}</span>
+            <span>Team: {{ user.teamSize }}</span>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>

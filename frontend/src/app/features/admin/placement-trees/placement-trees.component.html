@@ -1,0 +1,80 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Placement Trees</h1>
+    <p class="text-slate-500 mt-1">Pick any user and zone to inspect their downline structure.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <app-card title="Find a user" class="lg:col-span-1">
+      <app-input placeholder="Search by name or email…" [prefixIcon]="true" [ngModel]="search()" (ngModelChange)="search.set($event)">
+        <svg icon class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+      </app-input>
+
+      @if (loading()) {
+        <div class="space-y-2 mt-4">
+          @for (i of [1, 2, 3]; track i) { <app-skeleton customClass="h-10 w-full" /> }
+        </div>
+      } @else {
+        <div class="space-y-1.5 mt-4 max-h-96 overflow-y-auto">
+          @for (user of filteredUsers(); track user.id) {
+            <button
+              type="button"
+              (click)="selectUser(user)"
+              class="w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-smooth"
+              [class]="selectedUser()?.id === user.id ? 'bg-brand-50 ring-1 ring-brand-200' : 'hover:bg-slate-50'"
+            >
+              <div class="w-8 h-8 rounded-full bg-navy-100 text-navy-700 flex items-center justify-center text-xs font-semibold shrink-0">
+                {{ user.fullName.slice(0, 1).toUpperCase() }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-800 truncate">{{ user.fullName }}</p>
+                <p class="text-xs text-slate-400 truncate">{{ user.email }}</p>
+              </div>
+            </button>
+          } @empty {
+            <p class="text-sm text-slate-400 text-center py-6">No users match your search.</p>
+          }
+        </div>
+      }
+    </app-card>
+
+    <div class="lg:col-span-2 space-y-4">
+      @if (!selectedUser()) {
+        <app-card>
+          <app-empty-state icon="team" title="Select a user" description="Choose someone from the list to view their placement tree." />
+        </app-card>
+      } @else {
+        @if (zones().length > 1) {
+          <div class="flex gap-2 flex-wrap">
+            @for (zone of zones(); track zone.id) {
+              <button
+                type="button"
+                (click)="selectZone(zone.id)"
+                class="px-4 py-2 rounded-lg text-sm font-medium transition-smooth"
+                [class]="selectedZoneId() === zone.id ? 'bg-navy-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'"
+              >
+                {{ zone.zoneName }}
+              </button>
+            }
+          </div>
+        }
+
+        <app-card [title]="treeTitle()" [subtitle]="teamSize() + ' total members'">
+          @if (treeLoading()) {
+            <app-skeleton customClass="h-10 w-full" />
+          } @else if (!tree()) {
+            <app-empty-state icon="team" title="No downline in this zone" description="This user has no placements in the selected zone yet." />
+          } @else {
+            <div class="overflow-x-auto">
+              <div class="min-w-[280px]">
+                <app-placement-tree-node [node]="tree()!" [depth]="0" />
+              </div>
+            </div>
+          }
+        </app-card>
+      }
+    </div>
+  </div>
+</div>

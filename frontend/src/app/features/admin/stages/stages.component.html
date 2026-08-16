@@ -1,0 +1,171 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Stages</h1>
+      <p class="text-slate-500 mt-1">Configure milestones, payouts and rewards per zone.</p>
+    </div>
+    <app-button (click)="openCreate()">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      New Stage
+    </app-button>
+  </div>
+
+  @if (zones().length > 0) {
+    <div class="flex gap-2 flex-wrap">
+      <button
+        type="button"
+        (click)="zoneFilter.set(null)"
+        class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-smooth"
+        [class]="zoneFilter() === null ? 'bg-navy-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'"
+      >
+        All zones
+      </button>
+      @for (zone of zones(); track zone.id) {
+        <button
+          type="button"
+          (click)="zoneFilter.set(zone.id)"
+          class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-smooth"
+          [class]="zoneFilter() === zone.id ? 'bg-navy-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'"
+        >
+          {{ zone.zoneName }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <app-card>
+      <div class="space-y-3">
+        @for (i of [1, 2, 3]; track i) { <app-skeleton customClass="h-14 w-full" /> }
+      </div>
+    </app-card>
+  } @else if (filteredStages().length === 0) {
+    <app-card>
+      <app-empty-state icon="inbox" title="No stages found" description="Create a stage to define a milestone for this zone.">
+        <app-button (click)="openCreate()">Create a stage</app-button>
+      </app-empty-state>
+    </app-card>
+  } @else {
+    <app-table class="hidden lg:block">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="text-left font-medium px-5 py-3">Zone</th>
+            <th class="text-left font-medium px-5 py-3">Stage</th>
+            <th class="text-right font-medium px-5 py-3">Placements</th>
+            <th class="text-right font-medium px-5 py-3">Referrals</th>
+            <th class="text-right font-medium px-5 py-3">Payout</th>
+            <th class="text-right font-medium px-5 py-3">Retention</th>
+            <th class="text-left font-medium px-5 py-3">Reward</th>
+            <th class="text-left font-medium px-5 py-3">Status</th>
+            <th class="text-right font-medium px-5 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (stage of filteredStages(); track stage.id) {
+            <tr class="hover:bg-slate-50/60 transition-smooth">
+              <td class="px-5 py-3.5 text-slate-500">{{ zoneName(stage.zoneId) }}</td>
+              <td class="px-5 py-3.5 font-medium text-slate-800">{{ stage.stageName }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-600">{{ stage.requiredPlacementCount }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-600">{{ stage.requiredReferralCount }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-700">₹{{ stage.payoutAmount | number }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-500">{{ stage.retentionPercentage }}%</td>
+              <td class="px-5 py-3.5 text-slate-500">{{ stage.itemReward || '—' }}</td>
+              <td class="px-5 py-3.5">
+                <app-badge [variant]="stage.isActive ? 'emerald' : 'gray'" size="sm">{{ stage.isActive ? 'Active' : 'Inactive' }}</app-badge>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <button type="button" (click)="openEdit(stage)" class="text-slate-400 hover:text-brand-600 p-1.5" aria-label="Edit">
+                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                </button>
+                <button type="button" (click)="confirmDelete(stage)" class="text-slate-400 hover:text-red-600 p-1.5" aria-label="Delete">
+                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table>
+
+    <!-- Stacked cards below lg -->
+    <div class="lg:hidden space-y-3">
+      @for (stage of filteredStages(); track stage.id) {
+        <app-card padding="sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-800">{{ stage.stageName }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">{{ zoneName(stage.zoneId) }} · Seq. {{ stage.sequenceOrder }}</p>
+            </div>
+            <app-badge [variant]="stage.isActive ? 'emerald' : 'gray'" size="sm">{{ stage.isActive ? 'Active' : 'Inactive' }}</app-badge>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-sm">
+            <div><span class="text-slate-400">Placements:</span> <span class="font-medium">{{ stage.requiredPlacementCount }}</span></div>
+            <div><span class="text-slate-400">Referrals:</span> <span class="font-medium">{{ stage.requiredReferralCount }}</span></div>
+            <div><span class="text-slate-400">Payout:</span> <span class="font-medium">₹{{ stage.payoutAmount | number }}</span></div>
+            <div><span class="text-slate-400">Retention:</span> <span class="font-medium">{{ stage.retentionPercentage }}%</span></div>
+          </div>
+          <div class="flex justify-end gap-1 mt-2">
+            <app-button variant="ghost" size="sm" (click)="openEdit(stage)">Edit</app-button>
+            <app-button variant="ghost" size="sm" (click)="confirmDelete(stage)">Delete</app-button>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>
+
+<app-modal [open]="modalOpen()" [title]="editingStage() ? 'Edit Stage' : 'Create Stage'" size="lg" (close)="modalOpen.set(false)">
+  <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Zone</label>
+        <select
+          formControlName="zoneId"
+          [attr.disabled]="editingStage() ? true : null"
+          class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500 disabled:bg-slate-50"
+        >
+          @for (zone of zones(); track zone.id) {
+            <option [value]="zone.id">{{ zone.zoneName }}</option>
+          }
+        </select>
+      </div>
+      <app-input label="Stage name" formControlName="stageName" [required]="true" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <app-input label="Sequence order" type="number" formControlName="sequenceOrder" [required]="true" />
+      <app-input label="Retention %" type="number" formControlName="retentionPercentage" [required]="true" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <app-input label="Required placements" type="number" formControlName="requiredPlacementCount" [required]="true" />
+      <app-input label="Required referrals" type="number" formControlName="requiredReferralCount" [required]="true" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <app-input label="Payout amount (₹)" type="number" formControlName="payoutAmount" [required]="true" />
+      <app-input label="Item reward (optional)" formControlName="itemReward" placeholder="e.g. E-Bike" />
+    </div>
+
+    <div class="flex items-center gap-3">
+      <input type="checkbox" formControlName="isActive" id="stageActive" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+      <label for="stageActive" class="text-sm text-slate-700">Active</label>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <app-button variant="outline" type="button" (click)="modalOpen.set(false)">Cancel</app-button>
+      <app-button type="submit" [loading]="saving()" [fullWidth]="true">Save Stage</app-button>
+    </div>
+  </form>
+</app-modal>
+
+<app-modal [open]="!!deleteTarget()" title="Delete stage?" size="sm" (close)="deleteTarget.set(null)">
+  <p class="text-sm text-slate-600">
+    Are you sure you want to delete <span class="font-semibold">{{ deleteTarget()?.stageName }}</span>? This cannot be undone.
+  </p>
+  <div class="flex gap-3 mt-6">
+    <app-button variant="outline" [fullWidth]="true" (click)="deleteTarget.set(null)">Cancel</app-button>
+    <app-button variant="danger" [fullWidth]="true" (click)="deleteConfirmed()">Delete</app-button>
+  </div>
+</app-modal>

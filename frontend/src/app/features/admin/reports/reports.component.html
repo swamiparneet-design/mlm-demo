@@ -1,0 +1,176 @@
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Reports</h1>
+      <p class="text-slate-500 mt-1">Business intelligence across your entire network.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex bg-slate-100 rounded-lg p-1">
+        @for (option of rangeOptions; track option.id) {
+          <button
+            type="button"
+            (click)="setRange(option.id)"
+            class="px-3 py-1.5 rounded-md text-sm font-medium transition-smooth"
+            [class]="range() === option.id ? 'bg-white shadow-soft text-slate-900' : 'text-slate-500 hover:text-slate-700'"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+      <app-button variant="outline" size="sm" (click)="exportCsv()">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+        Export Report
+      </app-button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-100">
+          <app-skeleton customClass="h-4 w-24" />
+          <app-skeleton customClass="h-8 w-28 mt-3" />
+        </div>
+      }
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <app-card class="lg:col-span-2"><app-skeleton customClass="h-72 w-full" /></app-card>
+      <app-card><app-skeleton customClass="h-72 w-full" /></app-card>
+    </div>
+  } @else {
+    <!-- Summary strip -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <app-stat-card label="Total Users" [value]="totalUsersLabel()" [trend]="usersTrend()" tone="navy" />
+      <app-stat-card label="Total Collections" [value]="totalCollectionsLabel()" [trend]="collectionsTrend()" tone="emerald" />
+      <app-stat-card label="Payouts Disbursed" [value]="totalPayoutsLabel()" [trend]="payoutsTrend()" tone="gold" />
+      <app-stat-card label="Net Company Retained" [value]="totalRetainedLabel()" [trend]="retainedTrend()" tone="slate" />
+    </div>
+
+    <!-- User growth -->
+    <app-card title="User Growth" subtitle="Cumulative registrations over the selected period">
+      @if (!hasEnoughUserData()) {
+        <app-empty-state icon="chart" title="Not enough data yet" description="More registrations are needed before a meaningful growth trend can be shown." />
+      } @else {
+        <app-chart type="line" [data]="userGrowthData()" [options]="lineChartOptions" [height]="300" />
+      }
+    </app-card>
+
+    <!-- Zone distribution + breakdown table -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <app-card title="Zone-wise Distribution" class="lg:col-span-2">
+        @if (!hasEnoughUserData()) {
+          <app-empty-state icon="chart" title="Not enough data yet" />
+        } @else {
+          <app-chart type="doughnut" [data]="zoneDonutData()" [options]="zoneDonutOptions" [height]="260" />
+        }
+      </app-card>
+
+      <app-card title="Zone Breakdown" class="lg:col-span-3">
+        @if (zoneBreakdown().length === 0) {
+          <app-empty-state icon="chart" title="No zone data yet" />
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-slate-500">
+                <tr>
+                  <th class="text-left font-medium py-2">Zone</th>
+                  <th class="text-right font-medium py-2">Users</th>
+                  <th class="text-right font-medium py-2">% of total</th>
+                  <th class="text-right font-medium py-2">Collection</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (zone of zoneBreakdown(); track zone.zoneName) {
+                  <tr>
+                    <td class="py-2.5 font-medium text-slate-800">{{ zone.zoneName }}</td>
+                    <td class="py-2.5 text-right text-slate-600">{{ zone.count }}</td>
+                    <td class="py-2.5 text-right text-slate-500">{{ zone.percent.toFixed(1) }}%</td>
+                    <td class="py-2.5 text-right font-medium text-slate-800">₹{{ zone.collection | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </app-card>
+    </div>
+
+    <!-- Stage-wise funnel -->
+    <app-card title="Stage-wise Funnel" subtitle="Where your network is concentrated right now">
+      @if (stageFunnel().length === 0) {
+        <app-empty-state icon="chart" title="Not enough data yet" description="Once members progress through stages, the funnel will appear here." />
+      } @else {
+        <div class="space-y-3">
+          @for (stage of stageFunnel(); track stage.stageName) {
+            <div>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="font-medium text-slate-700">{{ stage.stageName }}</span>
+                <span class="text-slate-500">{{ stage.count }} users</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  class="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 transition-all duration-700"
+                  [style.width.%]="(stage.count / funnelMax()) * 100"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </app-card>
+
+    <!-- Payout trend -->
+    <app-card title="Payout Trend" subtitle="Net payouts vs. company retention over time">
+      @if (!hasEnoughPayoutData()) {
+        <app-empty-state icon="chart" title="Not enough data yet" description="Once more payouts are completed, this trend will populate." />
+      } @else {
+        <app-chart type="bar" [data]="payoutTrendData()" [options]="payoutTrendOptions" [height]="300" />
+      }
+    </app-card>
+
+    <!-- Top performers -->
+    <app-card title="Top Performers" subtitle="Ranked by total team size">
+      @if (topPerformers().length === 0) {
+        <app-empty-state icon="chart" title="No performers yet" />
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="text-slate-500 bg-slate-50">
+              <tr>
+                <th class="text-left font-medium px-4 py-2.5">Rank</th>
+                <th class="text-left font-medium px-4 py-2.5">Name</th>
+                <th class="text-left font-medium px-4 py-2.5">Zone</th>
+                <th class="text-left font-medium px-4 py-2.5">Stage</th>
+                <th class="text-right font-medium px-4 py-2.5">Team Size</th>
+                <th class="text-right font-medium px-4 py-2.5">Total Earned</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (p of topPerformers(); track p.rank) {
+                <tr>
+                  <td class="px-4 py-2.5">
+                    @if (p.rank <= 3) {
+                      <span
+                        class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white"
+                        [class]="p.rank === 1 ? 'bg-gold-500' : p.rank === 2 ? 'bg-slate-400' : 'bg-amber-700'"
+                      >
+                        {{ p.rank }}
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center justify-center w-7 h-7 text-xs font-medium text-slate-500">{{ p.rank }}</span>
+                    }
+                  </td>
+                  <td class="px-4 py-2.5 font-medium text-slate-800">{{ p.fullName }}</td>
+                  <td class="px-4 py-2.5 text-slate-500">{{ p.zoneName }}</td>
+                  <td class="px-4 py-2.5 text-slate-500">{{ p.stageName }}</td>
+                  <td class="px-4 py-2.5 text-right font-semibold text-slate-800">{{ p.teamSize }}</td>
+                  <td class="px-4 py-2.5 text-right text-brand-700 font-medium">₹{{ p.totalEarned | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-card>
+  }
+</div>

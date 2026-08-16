@@ -1,0 +1,133 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Zones</h1>
+      <p class="text-slate-500 mt-1">Manage entry zones, pricing and placement strategy.</p>
+    </div>
+    <app-button (click)="openCreate()">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      New Zone
+    </app-button>
+  </div>
+
+  @if (loading()) {
+    <app-card>
+      <div class="space-y-3">
+        @for (i of [1, 2, 3]; track i) { <app-skeleton customClass="h-14 w-full" /> }
+      </div>
+    </app-card>
+  } @else if (zones().length === 0) {
+    <app-card>
+      <app-empty-state icon="inbox" title="No zones configured" description="Create your first zone to start onboarding members.">
+        <app-button (click)="openCreate()">Create a zone</app-button>
+      </app-empty-state>
+    </app-card>
+  } @else {
+    <app-table class="hidden md:block">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="text-left font-medium px-5 py-3">#</th>
+            <th class="text-left font-medium px-5 py-3">Zone</th>
+            <th class="text-right font-medium px-5 py-3">Entry Amount</th>
+            <th class="text-left font-medium px-5 py-3">Strategy</th>
+            <th class="text-left font-medium px-5 py-3">Capacity</th>
+            <th class="text-left font-medium px-5 py-3">Status</th>
+            <th class="text-right font-medium px-5 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (zone of zones(); track zone.id) {
+            <tr class="hover:bg-slate-50/60 transition-smooth">
+              <td class="px-5 py-3.5 text-slate-400">{{ zone.sequenceOrder }}</td>
+              <td class="px-5 py-3.5 font-medium text-slate-800">{{ zone.zoneName }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-700">₹{{ zone.entryAmount | number }}</td>
+              <td class="px-5 py-3.5 text-slate-500">{{ zone.placementStrategyType }}</td>
+              <td class="px-5 py-3.5 text-slate-500">{{ zone.capacityLimit ?? 'Unlimited' }}</td>
+              <td class="px-5 py-3.5">
+                <app-badge [variant]="zone.isActive ? 'emerald' : 'gray'" size="sm">{{ zone.isActive ? 'Active' : 'Inactive' }}</app-badge>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <button type="button" (click)="openEdit(zone)" class="text-slate-400 hover:text-brand-600 p-1.5" aria-label="Edit">
+                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                </button>
+                <button type="button" (click)="confirmDelete(zone)" class="text-slate-400 hover:text-red-600 p-1.5" aria-label="Delete">
+                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table>
+
+    <!-- Mobile stacked cards -->
+    <div class="md:hidden space-y-3">
+      @for (zone of zones(); track zone.id) {
+        <app-card padding="sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-800">{{ zone.zoneName }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">Seq. {{ zone.sequenceOrder }} · {{ zone.placementStrategyType }}</p>
+            </div>
+            <app-badge [variant]="zone.isActive ? 'emerald' : 'gray'" size="sm">{{ zone.isActive ? 'Active' : 'Inactive' }}</app-badge>
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+            <p class="text-sm font-semibold text-slate-900">₹{{ zone.entryAmount | number }}</p>
+            <div class="flex gap-1">
+              <app-button variant="ghost" size="sm" (click)="openEdit(zone)">Edit</app-button>
+              <app-button variant="ghost" size="sm" (click)="confirmDelete(zone)">Delete</app-button>
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>
+
+<app-modal [open]="modalOpen()" [title]="editingZone() ? 'Edit Zone' : 'Create Zone'" (close)="modalOpen.set(false)">
+  <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+    <app-input label="Zone name" formControlName="zoneName" [required]="true" />
+
+    <div class="grid grid-cols-2 gap-4">
+      <app-input label="Sequence order" type="number" formControlName="sequenceOrder" [required]="true" />
+      <app-input label="Entry amount (₹)" type="number" formControlName="entryAmount" [required]="true" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1.5">Placement strategy</label>
+      <select formControlName="placementStrategyType" class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-500">
+        @for (strategy of strategyOptions; track strategy) {
+          <option [value]="strategy">{{ strategy }}</option>
+        }
+      </select>
+    </div>
+
+    <app-input label="Capacity limit (optional)" type="number" formControlName="capacityLimit" hint="Leave blank for unlimited capacity." />
+
+    <div class="flex items-center gap-3">
+      <input type="checkbox" formControlName="requiresNewInvestmentIfDirectEntry" id="reqInvestment" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+      <label for="reqInvestment" class="text-sm text-slate-700">Requires new investment on direct entry</label>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <input type="checkbox" formControlName="isActive" id="zoneActive" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+      <label for="zoneActive" class="text-sm text-slate-700">Active</label>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <app-button variant="outline" type="button" (click)="modalOpen.set(false)">Cancel</app-button>
+      <app-button type="submit" [loading]="saving()" [fullWidth]="true">Save Zone</app-button>
+    </div>
+  </form>
+</app-modal>
+
+<app-modal [open]="!!deleteTarget()" title="Delete zone?" size="sm" (close)="deleteTarget.set(null)">
+  <p class="text-sm text-slate-600">
+    Are you sure you want to delete <span class="font-semibold">{{ deleteTarget()?.zoneName }}</span>? This cannot be undone.
+  </p>
+  <div class="flex gap-3 mt-6">
+    <app-button variant="outline" [fullWidth]="true" (click)="deleteTarget.set(null)">Cancel</app-button>
+    <app-button variant="danger" [fullWidth]="true" (click)="deleteConfirmed()">Delete</app-button>
+  </div>
+</app-modal>

@@ -1,0 +1,76 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">My Referrals</h1>
+      <p class="text-slate-500 mt-1">People who joined using your referral.</p>
+    </div>
+    @if (!loading()) {
+      <app-badge variant="navy">{{ referrals().length }} total</app-badge>
+    }
+  </div>
+
+  @if (loading()) {
+    <app-card>
+      <div class="space-y-3">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <app-skeleton customClass="h-12 w-full" />
+        }
+      </div>
+    </app-card>
+  } @else if (referrals().length === 0) {
+    <app-card>
+      <app-empty-state
+        icon="referrals"
+        title="No referrals yet"
+        description="Share your referrer email with friends and family to start building your network."
+      />
+    </app-card>
+  } @else {
+    <!-- Desktop / tablet table -->
+    <app-table class="hidden sm:block">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="text-left font-medium px-5 py-3">Name</th>
+            <th class="text-left font-medium px-5 py-3">Email</th>
+            <th class="text-left font-medium px-5 py-3">Joined</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (referral of referrals(); track referral.userId) {
+            <tr class="hover:bg-slate-50/60 transition-smooth">
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-semibold shrink-0">
+                    {{ referral.fullName.slice(0, 1).toUpperCase() }}
+                  </div>
+                  <span class="font-medium text-slate-800">{{ referral.fullName }}</span>
+                </div>
+              </td>
+              <td class="px-5 py-3.5 text-slate-500">{{ referral.email }}</td>
+              <td class="px-5 py-3.5 text-slate-500">{{ referral.joinedAt | date: 'MMM d, y' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table>
+
+    <!-- Mobile stacked cards -->
+    <div class="sm:hidden space-y-3">
+      @for (referral of referrals(); track referral.userId) {
+        <app-card padding="sm">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-semibold shrink-0">
+              {{ referral.fullName.slice(0, 1).toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-slate-800 truncate">{{ referral.fullName }}</p>
+              <p class="text-xs text-slate-500 truncate">{{ referral.email }}</p>
+            </div>
+            <p class="text-xs text-slate-400 shrink-0">{{ referral.joinedAt | date: 'MMM d' }}</p>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>

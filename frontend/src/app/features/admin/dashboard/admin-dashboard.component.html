@@ -1,0 +1,53 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+    <p class="text-slate-500 mt-1">A quick pulse on collections, payouts and network health.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-100">
+          <app-skeleton customClass="h-4 w-24" />
+          <app-skeleton customClass="h-8 w-28 mt-3" />
+        </div>
+      }
+    </div>
+    <app-card><app-skeleton customClass="h-64 w-full" /></app-card>
+  } @else if (summary()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <app-stat-card
+        label="Total Users"
+        [value]="summary()!.totalUsers.toString()"
+        tone="navy"
+        icon='<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>'
+      />
+      <app-stat-card
+        label="Total Collections"
+        [value]="'₹' + (summary()!.totalCollections | number)"
+        tone="emerald"
+        icon='<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.625c.621 0 1.125.504 1.125 1.125v.375m-18 0h18M4.5 12h15m-15 3h15" /></svg>'
+      />
+      <app-stat-card
+        label="Payouts Disbursed"
+        [value]="'₹' + (summary()!.totalPayouts | number)"
+        tone="gold"
+        icon='<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>'
+      />
+      <app-stat-card
+        label="Company Retained"
+        [value]="'₹' + (summary()!.totalRetainedAmount | number)"
+        tone="slate"
+        icon='<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM9.75 9.75c0-1.036.84-1.875 1.875-1.875h.75a1.875 1.875 0 010 3.75h-.75a1.875 1.875 0 000 3.75h.75a1.875 1.875 0 001.875-1.875" /></svg>'
+      />
+    </div>
+
+    <app-card title="Zone-wise User Distribution" subtitle="Where your network currently stands">
+      @if (!hasEnoughData()) {
+        <app-empty-state icon="chart" title="Not enough data yet" description="Once more members join, a zone-wise breakdown will appear here." />
+      } @else {
+        <app-chart type="bar" [data]="chartData()" [options]="chartOptions" [height]="280" />
+      }
+    </app-card>
+  }
+</div>

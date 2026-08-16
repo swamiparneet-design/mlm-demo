@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Payout History</h1>
+    <p class="text-slate-500 mt-1">All your stage completion payouts, in one place.</p>
+  </div>
+
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3]; track i) {
+        <app-card padding="sm"><app-skeleton customClass="h-4 w-24" /><app-skeleton customClass="h-7 w-32 mt-2" /></app-card>
+      }
+    </div>
+    <app-card>
+      <div class="space-y-3">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <app-skeleton customClass="h-12 w-full" />
+        }
+      </div>
+    </app-card>
+  } @else if (payouts().length === 0) {
+    <app-card>
+      <app-empty-state icon="payouts" title="No payouts yet" description="Complete your current stage to unlock your first payout." />
+    </app-card>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Total gross</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">₹{{ totalGross() | number }}</p>
+      </app-card>
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Total retained</p>
+        <p class="text-2xl font-bold text-gold-700 mt-1">₹{{ totalRetention() | number }}</p>
+      </app-card>
+      <app-card padding="sm">
+        <p class="text-xs font-medium text-slate-500">Total net received</p>
+        <p class="text-2xl font-bold text-brand-700 mt-1">₹{{ totalNet() | number }}</p>
+      </app-card>
+    </div>
+
+    <app-table class="hidden md:block">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="text-left font-medium px-5 py-3">Date</th>
+            <th class="text-left font-medium px-5 py-3">Zone</th>
+            <th class="text-left font-medium px-5 py-3">Stage</th>
+            <th class="text-right font-medium px-5 py-3">Gross</th>
+            <th class="text-right font-medium px-5 py-3">Retention</th>
+            <th class="text-right font-medium px-5 py-3">Net</th>
+            <th class="text-left font-medium px-5 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (payout of payouts(); track payout.id) {
+            <tr class="hover:bg-slate-50/60 transition-smooth">
+              <td class="px-5 py-3.5 text-slate-500">{{ payout.createdAt | date: 'MMM d, y' }}</td>
+              <td class="px-5 py-3.5 font-medium text-slate-800">{{ payout.zoneName }}</td>
+              <td class="px-5 py-3.5 text-slate-600">{{ payout.stageName }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-600">₹{{ payout.grossAmount | number }}</td>
+              <td class="px-5 py-3.5 text-right text-slate-400">₹{{ payout.retentionAmount | number }}</td>
+              <td class="px-5 py-3.5 text-right font-semibold text-slate-900">₹{{ payout.netPayoutAmount | number }}</td>
+              <td class="px-5 py-3.5">
+                <app-badge [variant]="badgeVariant(payout.status)" size="sm">{{ payout.status }}</app-badge>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table>
+
+    <!-- Mobile stacked cards -->
+    <div class="md:hidden space-y-3">
+      @for (payout of payouts(); track payout.id) {
+        <app-card padding="sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-800">{{ payout.zoneName }} · {{ payout.stageName }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">{{ payout.createdAt | date: 'MMM d, y' }}</p>
+            </div>
+            <app-badge [variant]="badgeVariant(payout.status)" size="sm">{{ payout.status }}</app-badge>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100 text-center">
+            <div class="min-w-0">
+              <p class="text-[11px] text-slate-400">Gross</p>
+              <p class="text-sm font-semibold text-slate-700 break-words">₹{{ payout.grossAmount | number }}</p>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] text-slate-400">Retention</p>
+              <p class="text-sm font-semibold text-slate-500 break-words">₹{{ payout.retentionAmount | number }}</p>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] text-slate-400">Net</p>
+              <p class="text-sm font-semibold text-brand-700 break-words">₹{{ payout.netPayoutAmount | number }}</p>
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,59 @@
+<div class="max-w-2xl space-y-6">
+  <div>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Profile</h1>
+    <p class="text-slate-500 mt-1">View and update your basic account information.</p>
+  </div>
+
+  @if (loading()) {
+    <app-card>
+      <div class="space-y-4">
+        <app-skeleton customClass="h-16 w-16 rounded-full" />
+        <app-skeleton customClass="h-10 w-full" />
+        <app-skeleton customClass="h-10 w-full" />
+      </div>
+    </app-card>
+  } @else if (profile()) {
+    <app-card>
+      <div class="flex items-center gap-4 pb-5 border-b border-slate-100 mb-5">
+        <div class="w-16 h-16 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xl font-bold shrink-0">
+          {{ profile()!.fullName.slice(0, 1).toUpperCase() }}
+        </div>
+        <div>
+          <p class="text-lg font-semibold text-slate-900">{{ profile()!.fullName }}</p>
+          <p class="text-sm text-slate-500">{{ profile()!.email }}</p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <app-badge [variant]="kycVariant(profile()!.kycStatus)" size="sm">KYC: {{ profile()!.kycStatus }}</app-badge>
+            <app-badge [variant]="profile()!.isActive ? 'emerald' : 'red'" size="sm">
+              {{ profile()!.isActive ? 'Active' : 'Inactive' }}
+            </app-badge>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+        <app-input label="Full name" formControlName="fullName" [required]="true" />
+        <app-input label="Mobile number" type="tel" formControlName="mobile" [required]="true" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500">
+              {{ profile()!.email }}
+            </div>
+            <p class="mt-1.5 text-xs text-slate-400">Email cannot be changed here.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Member since</label>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500">
+              {{ profile()!.createdAt | date: 'MMMM d, y' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <app-button type="submit" [loading]="saving()">Save changes</app-button>
+        </div>
+      </form>
+    </app-card>
+  }
+</div>

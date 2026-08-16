@@ -1,0 +1,70 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+**/[Pp]ackages/*
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# Node
+node_modules/
+dist/
+build/
+*.pid
+*.seed
+*.pid.lock
+
+# Angular
+.angular/
+
+# Coverage
+coverage/
+*.opencover.xml
+*.cobertura.xml
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Publish
+publish/
+
+# ZIP files (already in project)
+*.zip
+
+# Database
+*.mdf
+*.ldf
+*.sdf
+
+# Secrets
+appsettings.Production.json
+secrets.json
