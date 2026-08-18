@@ -3,17 +3,17 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy solution file and restore dependencies
-COPY MLM.sln .
-COPY MLM.API/MLM.API.csproj MLM.API/
-COPY MLM.Application/MLM.Application.csproj MLM.Application/
-COPY MLM.Domain/MLM.Domain.csproj MLM.Domain/
-COPY MLM.Infrastructure/MLM.Infrastructure.csproj MLM.Infrastructure/
+COPY backend/MLM.sln .
+COPY backend/MLM.API/MLM.API.csproj backend/MLM.API/
+COPY backend/MLM.Application/MLM.Application.csproj backend/MLM.Application/
+COPY backend/MLM.Domain/MLM.Domain.csproj backend/MLM.Domain/
+COPY backend/MLM.Infrastructure/MLM.Infrastructure.csproj backend/MLM.Infrastructure/
 
-RUN dotnet restore MLM.API/MLM.API.csproj
+RUN dotnet restore backend/MLM.API/MLM.API.csproj
 
 # Copy everything else and build
 COPY . .
-WORKDIR /src/MLM.API
+WORKDIR /src/backend/MLM.API
 RUN dotnet build MLM.API.csproj -c Release -o /app/build
 
 # Publish stage
@@ -31,7 +31,7 @@ RUN apt-get update \
 
 # Build Angular frontend
 WORKDIR /frontend
-COPY ../frontend ./
+COPY frontend ./
 RUN npm ci \
     && npm run build -- --configuration=production \
     && cp -r dist/* /app/wwwroot/ || cp -r dist/mlm-frontend/* /app/wwwroot/ || true
