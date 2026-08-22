@@ -22,14 +22,14 @@ jaate hain** (`Program.cs`), koi manual step nahi.
 ```bash
 git add Dockerfile docker-compose.yml .dockerignore COOLIFY_DEPLOY.md
 git commit -m "Add Coolify deployment setup"
-git push origin main
+git push origin master
 ```
 
 ## Step 2: Coolify me project banao
 
 1. Coolify dashboard -> **+ New Resource**
 2. **Git Repository** choose karo
-3. Repo select karo: `swamiparneet-design/mlm-demo`, branch `main`
+3. Repo select karo: `swamiparneet-design/mlm-demo`, branch `master`
 4. **Build Pack = "Docker Compose"** select karo (auto-detect ho sakta hai kyunki repo root me
    `docker-compose.yml` hai)
 
