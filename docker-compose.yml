@@ -1,0 +1,42 @@
+# Coolify-ready Docker Compose stack for MLM demo.
+# Coolify: New Resource -> Git Repository -> Build Pack: "Docker Compose"
+# Ye file repo root me docker-compose.yml ke naam se detect ho jayegi.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Sab values Coolify UI ke Environment Variables se override ki ja sakti hain
+      - ConnectionStrings__DefaultConnection=Server=${MYSQL_HOST:-mysql};Port=${MYSQL_PORT:-3306};Database=${MYSQL_DATABASE:-mlmdb};User=${MYSQL_USER:-mlmuser};Password=${MYSQL_PASSWORD:-ChangeMe123};
+      - Jwt__Secret=${JWT_SECRET:-3r8IkJps5qtJa8XjzbC0Sy8IvwsJkNAhx1aLnCWql90uQRrGRgIGImtoPuwumTYB}
+    # Direct port access chahiye (domain ke bina) to neeche wali line uncomment karo,
+    # warna Coolify UI me app service par Domain set karke port 8080 choose karo.
+    # ports:
+    #   - "8080:8080"
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mlmdb}
+      MYSQL_USER: ${MYSQL_USER:-mlmuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ChangeMe123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-RootChangeMe123}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot --password=$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+volumes:
+  mysql-data:

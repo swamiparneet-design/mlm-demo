@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node / Angular build artifacts
+frontend/node_modules
+frontend/dist
+frontend/.angular
+
+# .NET build artifacts
+**/bin
+**/obj
+backend/publish
+
+# Stale frontend files inside backend (rebuilt fresh in Docker)
+backend/MLM.API/wwwroot/*
+!backend/MLM.API/wwwroot/.gitkeep
+
+# Docs and legacy Railway config (not needed inside image)
+*.md
+railway.json
+nixpacks.toml
+start.sh
