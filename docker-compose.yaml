@@ -13,6 +13,8 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      # appsettings.json me 'Urls' purane port 5043 par hardcoded hai; ye env var usse override karta hai
+      - Urls=http://+:8080
       # Sab values Coolify UI ke Environment Variables se override ki ja sakti hain
       - ConnectionStrings__DefaultConnection=Server=${MYSQL_HOST:-mysql};Port=${MYSQL_PORT:-3306};Database=${MYSQL_DATABASE:-mlmdb};User=${MYSQL_USER:-mlmuser};Password=${MYSQL_PASSWORD:-ChangeMe123};
       - Jwt__Secret=${JWT_SECRET:-3r8IkJps5qtJa8XjzbC0Sy8IvwsJkNAhx1aLnCWql90uQRrGRgIGImtoPuwumTYB}
