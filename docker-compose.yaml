@@ -16,10 +16,10 @@ services:
       # Sab values Coolify UI ke Environment Variables se override ki ja sakti hain
       - ConnectionStrings__DefaultConnection=Server=${MYSQL_HOST:-mysql};Port=${MYSQL_PORT:-3306};Database=${MYSQL_DATABASE:-mlmdb};User=${MYSQL_USER:-mlmuser};Password=${MYSQL_PASSWORD:-ChangeMe123};
       - Jwt__Secret=${JWT_SECRET:-3r8IkJps5qtJa8XjzbC0Sy8IvwsJkNAhx1aLnCWql90uQRrGRgIGImtoPuwumTYB}
-    # Direct port access chahiye (domain ke bina) to neeche wali line uncomment karo,
-    # warna Coolify UI me app service par Domain set karke port 8080 choose karo.
-    # ports:
-    #   - "8080:8080"
+    # Testing ke liye direct port access khula hai: http://SERVER_IP:8080
+    # Domain lagane ke baad bhi ye chalta rahega; band karna ho to neeche 2 lines ka # laga do.
+    ports:
+      - "${APP_PORT:-8080}:8080"
 
   mysql:
     image: mysql:8.0
